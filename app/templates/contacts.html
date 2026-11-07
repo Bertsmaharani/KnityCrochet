@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Контакты — Knity Crochet{% endblock %}
+
+{% block content %}
+<div class="mt-4 mb-5">
+    <h2 class="mb-5" style="color: var(--text-pink); font-family: 'Montserrat', sans-serif; font-size: 2rem;">
+        Контактная информация
+    </h2>
+
+    <!-- Сетка с контактами -->
+    <div class="row text-center" style="color: var(--text-pink); font-size: 1.2rem;">
+        
+        <!-- Верхний ряд -->
+        <div class="col-md-6 mb-5">
+            <p class="mb-2">Наша почта</p>
+            <h4 style="color: var(--text-pink);">knitycrochetshop@gmail.com</h4>
+        </div>
+        <div class="col-md-6 mb-5">
+            <p class="mb-2">Адрес нашего магазина</p>
+            <h4 style="color: var(--text-pink);">г. Нижний Новгород, ул. Б. Покровская, 16</h4>
+        </div>
+
+        <!-- Нижний ряд -->
+        <div class="col-md-6 mb-5">
+            <p class="mb-2">Наш номер телефона по Нижнему<br>Новгороду</p>
+            <h4 style="color: var(--text-pink);">+7(834)999-92-13</h4>
+        </div>
+        <div class="col-md-6 mb-5">
+            <p class="mb-2">Наш номер телефона по России<br>бесплатно</p>
+            <h4 style="color: var(--text-pink);">+7(812)275-01-32</h4>
+        </div>
+    </div>
+
+    <!-- Блок с соцсетями -->
+    <div class="text-center mt-5 pt-4">
+        <h3 class="mb-4" style="color: var(--text-pink); font-family: 'Montserrat', sans-serif;">
+            Наши социальные сети
+        </h3>
+        
+        <div class="d-flex flex-column align-items-center">
+            <!-- Иконка ВК (SVG) -->
+            <a href="https://vk.com/knitycrochetshop" target="_blank" class="mb-3 text-decoration-none">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="11" stroke="#333333" stroke-width="1.5"/>
+                    <path d="M12.785 16.2416C8.265 16.2416 5.688 13.2206 5.585 8.21859H7.839C7.91 11.8906 9.532 13.4466 10.824 13.7666V8.21859H12.947V11.3846C14.223 11.2466 15.564 9.80059 16.016 8.21859H18.139C17.793 10.1686 16.334 11.6146 15.311 12.2086C16.334 12.6906 17.997 13.9526 18.625 16.2416H16.287C15.794 14.7046 14.574 13.5286 12.947 13.3666V16.2416H12.785Z" fill="#333333"/>
+                </svg>
+            </a>
+            <h4 style="color: var(--text-pink); font-family: 'Montserrat', sans-serif;">
+                @knitycrochetshop
+            </h4>
+        </div>
+    </div>
+</div>
+{% endblock %}

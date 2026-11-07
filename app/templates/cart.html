@@ -1,0 +1,141 @@
+{#
+  Страница корзины и оформления заказа.
+  Данные корзины хранятся в localStorage браузера, что позволяет
+  сохранять выбор пользователя при переходах между страницами без обращения к серверу.
+#}
+{% extends "base.html" %}
+{% block content %}
+<div class="mt-4 mb-5">
+    <h2 class="section-title mb-4">Ваша корзина</h2>
+    <div id="cart-container"></div>
+
+    {# Форма оформления заказа отображается только при наличии товаров #}
+    <div class="card mt-5 border-0 shadow-sm rounded-4" id="order-form" style="display:none; background-color: var(--bg-header);">
+        <div class="card-body p-4 p-md-5">
+            <h3 class="mb-4" style="font-family: 'Playfair Display', serif; color: var(--text-pink);">
+                Оформление заказа
+            </h3>
+            
+            <div class="mb-4">
+                <label class="form-label small fw-bold" style="color: #333;">Адрес доставки</label>
+                <input type="text" class="form-control rounded-3" id="delivery_address" placeholder="Укажите город, улицу, дом и квартиру">
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label small fw-bold" style="color: #333;">Способ оплаты</label>
+                <select class="form-select rounded-3" id="payment_method">
+                    <option>Электронная платежная система</option>
+                    <option>Банковский перевод</option>
+                    <option>Наличные при получении</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-pink px-4 py-2 rounded-pill" onclick="submitOrder()">
+                Оформить заказ
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Отрисовка содержимого корзины на основе данных из localStorage.
+function renderCart() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const container = document.getElementById('cart-container');
+    const orderForm = document.getElementById('order-form');
+    
+    if (cart.length === 0) {
+        container.innerHTML = '<div class="text-center rounded-4" style="background-color: var(--bg-header); color: var(--text-pink); font-size: 1.2rem; padding: 2.5rem; font-family: \'Playfair Display\', serif;">Ваша корзина пока пуста 🧶</div>';
+        orderForm.style.display = 'none';
+        return;
+    }
+    
+    let total = 0;
+    // Используем table-borderless для более легкого и современного вида
+    let html = '<div class="table-responsive"><table class="table table-borderless align-middle"><thead class="border-bottom" style="border-color: var(--bg-header) !important;"><tr><th>Товар</th><th>Цена</th><th>Кол-во</th><th>Сумма</th><th></th></tr></thead><tbody>';
+    
+    cart.forEach((item, idx) => {
+        const sum = item.price * item.quantity;
+        total += sum;
+        html += `<tr>
+            <td class="fw-bold" style="color: #333;">${item.name}</td>
+            <td>${item.price} ₽</td>
+            <td>
+                <input type="number" min="1" value="${item.quantity}" onchange="updateQty(${idx}, this.value)" class="form-control form-control-sm rounded-3 text-center" style="width:70px">
+            </td>
+            <td class="fw-bold" style="color: var(--text-pink);">${sum.toFixed(2)} ₽</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-danger rounded-circle" onclick="removeItem(${idx})" title="Удалить" style="width: 30px; height: 30px; padding: 0;">✕</button>
+            </td>
+        </tr>`;
+    });
+    
+    html += `</tbody></table></div>`;
+    html += `<h4 class="text-end mt-4" style="color: var(--text-pink); font-family: 'Playfair Display', serif;">Итого: ${total.toFixed(2)} ₽</h4>`;
+    
+    container.innerHTML = html;
+    orderForm.style.display = 'block';
+}
+
+// Изменение количества товара в корзине
+function updateQty(idx, qty) {
+    const cart = JSON.parse(localStorage.getItem('cart'));
+    cart[idx].quantity = parseInt(qty);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    renderCart();
+}
+
+// Удаление товара из корзины
+function removeItem(idx) {
+    const cart = JSON.parse(localStorage.getItem('cart'));
+    cart.splice(idx, 1);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    renderCart();
+}
+
+// Отправка заказа на сервер.
+async function submitOrder() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Войдите, чтобы оформить заказ');
+        window.location.href = '/login';
+        return;
+    }
+    
+    const cart = JSON.parse(localStorage.getItem('cart'));
+    const order = {
+        delivery_address: document.getElementById('delivery_address').value,
+        payment_method: document.getElementById('payment_method').value,
+        items: cart.map(i => ({ product_id: i.id, quantity: i.quantity, discount: 0 }))
+    };
+    
+    if (!order.delivery_address) {
+        alert('Пожалуйста, укажите адрес доставки');
+        return;
+    }
+    
+    const resp = await fetch('/api/orders/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(order)
+    });
+    
+    if (resp.ok) {
+        alert('Заказ успешно оформлен! Спасибо за покупку.');
+        localStorage.removeItem('cart');
+        window.location.href = '/';
+    } else {
+        const err = await resp.json();
+        alert('Ошибка: ' + (err.detail || 'Не удалось оформить заказ'));
+    }
+}
+
+// Первичная отрисовка корзины при загрузке страницы
+renderCart();
+</script>
+{% endblock %}

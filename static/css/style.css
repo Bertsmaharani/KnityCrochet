@@ -1,0 +1,126 @@
+/* Подключаем шрифты от Google */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap');
+
+:root {
+    --bg-main: #ffffff;
+    --bg-header: #fcedf2; /* Светло-розовый фон шапки */
+    --bg-banner: #f8b7ca; /* Розовый фон баннера */
+    --text-main: #333333;
+    --text-pink: #d81b60; /* Ярко-розовый для логотипа и ссылок */
+    --btn-pink: #d81b60;
+    --btn-hover: #ad144d;
+}
+
+body {
+    background-color: var(--bg-main);
+    font-family: 'Montserrat', sans-serif;
+    color: var(--text-main);
+}
+
+/* Логотип */
+.logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    line-height: 0.9;
+    color: var(--text-pink);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+}
+.logo-text:hover {
+    color: var(--text-pink);
+}
+
+/* Навигация */
+.navbar-custom {
+    background-color: var(--bg-header);
+    padding: 20px 0;
+}
+.nav-link-custom {
+    color: var(--text-pink);
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin: 0 15px;
+    text-decoration: none;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+}
+.nav-link-custom:hover {
+    opacity: 0.7;
+    color: var(--text-pink);
+}
+
+/* Иконка корзины */
+.cart-icon {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+/* Баннер */
+.promo-banner {
+    background-color: var(--bg-banner);
+    border-radius: 0;
+    padding: 60px 40px;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+.promo-title {
+    font-size: 3rem;
+    font-weight: 400;
+    margin-bottom: 20px;
+}
+
+/* Карточки товаров */
+.card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(216, 27, 96, 0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+    background: #ffffff;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(216, 27, 96, 0.15);
+}
+.card-img-top {
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    object-fit: cover;
+    height: 250px;
+    background-color: #f7f7f7;
+}
+
+/* Кнопки */
+.btn-pink {
+    background-color: var(--btn-pink);
+    color: #ffffff;
+    border-radius: 30px;
+    padding: 10px 25px;
+    font-weight: 500;
+    border: none;
+    transition: background-color 0.3s;
+}
+.btn-pink:hover {
+    background-color: var(--btn-hover);
+    color: #ffffff;
+}
+
+/* Заголовки */
+h1, h2, h3, h4 {
+    font-family: 'Playfair Display', serif;
+    color: var(--text-pink);
+}
+
+h2.section-title {
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+}
+
+footer {
+    background-color: var(--bg-header);
+    color: var(--text-pink);
+    border-top: none !important;
+}

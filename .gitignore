@@ -1,0 +1,24 @@
+# Виртуальное окружение
+venv/
+env/
+.venv/
+
+# Переменные окружения (СЕКРЕТНЫЕ ДАННЫЕ)
+.env
+.env.*
+
+# Кэш Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# База данных и сессии Django
+db.sqlite3
+*.log
+staticfiles/
+
+# Настройки IDE
+.vscode/
+.idea/
+
+.schemathesis/

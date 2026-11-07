@@ -1,0 +1,92 @@
+{#
+  Страница регистрации нового пользователя.
+  Форма отправляет данные на API-эндпоинт /api/users/register
+  посредством асинхронного запроса (fetch API).
+#}
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0 rounded-4" style="background-color: #ffffff;">
+            <div class="card-body p-4 p-md-5">
+                <h3 class="section-title text-center mb-4">Регистрация клиента</h3>
+                
+                <form id="registerForm">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Логин</label>
+                        <input type="text" class="form-control rounded-3" id="user_login" required minlength="3" placeholder="Придумайте логин">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Пароль</label>
+                        <input type="password" class="form-control rounded-3" id="password" required minlength="6" placeholder="Минимум 6 символов">
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label small fw-bold">Имя</label>
+                            <input type="text" class="form-control rounded-3" id="first_name" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label small fw-bold">Фамилия</label>
+                            <input type="text" class="form-control rounded-3" id="last_name" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Отчество (необязательно)</label>
+                        <input type="text" class="form-control rounded-3" id="patronym">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Email</label>
+                        <input type="email" class="form-control rounded-3" id="email" required placeholder="example@mail.ru">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Телефон</label>
+                        <input type="text" class="form-control rounded-3" id="phone" required placeholder="+7 (999) 000-00-00">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Дата рождения</label>
+                        <input type="date" class="form-control rounded-3" id="birth_date" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-pink w-100 py-2 rounded-pill fs-5">Зарегистрироваться</button>
+                </form>
+                
+                <div class="mt-4 text-center">
+                    <span class="text-muted small">Уже есть аккаунт?</span> 
+                    <a href="/login" class="text-decoration-none" style="color: var(--text-pink); font-weight: 500;">Войти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Обработчик отправки формы регистрации.
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+        user_login: document.getElementById('user_login').value,
+        password: document.getElementById('password').value,
+        first_name: document.getElementById('first_name').value,
+        last_name: document.getElementById('last_name').value,
+        patronym: document.getElementById('patronym').value || null,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        birth_date: document.getElementById('birth_date').value
+    };
+    const resp = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (resp.ok) {
+        alert('Регистрация прошла успешно. Теперь можно войти.');
+        window.location.href = '/login';
+    } else {
+        const err = await resp.json();
+        alert('Ошибка: ' + (err.detail || 'Не удалось зарегистрироваться'));
+    }
+});
+</script>
+{% endblock %}

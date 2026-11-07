@@ -1,0 +1,30 @@
+# Перечень сторонних библиотек, необходимых для функционирования проекта.
+# Установка осуществляется командой: pip install -r requirements.txt
+
+# Веб-фреймворк и ASGI-сервер
+fastapi
+uvicorn[standard]
+
+# Работа с базой данных
+sqlalchemy
+asyncpg
+alembic
+
+# Валидация данных и настройки
+pydantic[email]
+pydantic-settings
+
+# Аутентификация и безопасность
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+
+# Шаблонизация
+jinja2
+
+# Тестирование
+pytest
+pytest-asyncio
+schemathesis
+hypothesis
+httpx

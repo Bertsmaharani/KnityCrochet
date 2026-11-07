@@ -1,0 +1,138 @@
+{#
+  Страница подробной информации о товаре.
+  Содержит карточку товара, список отзывов и форму добавления отзыва.
+#}
+{% extends "base.html" %}
+{% block content %}
+{% if product %}
+
+{# Блок с основной информацией о товаре #}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-md-8 text-center">
+        <p class="text-muted mb-2 text-uppercase" style="letter-spacing: 2px;">{{ product.category_name }}</p>
+        <h1 class="display-5 fw-bold mb-4" style="color: var(--text-pink);">{{ product.product_name }}</h1>
+        
+        <h2 class="mb-4" style="color: #333; font-family: 'Playfair Display', serif;">{{ product.price }} руб</h2>
+        
+        <p class="fs-5 mb-4">В наличии: <strong>{{ product.stock_quantity }} шт.</strong></p>
+
+        {# Передаём данные через data-атрибуты #}
+        <button class="btn btn-pink btn-lg add-to-cart-btn px-5"
+                data-id="{{ product.product_id }}"
+                data-name="{{ product.product_name }}"
+                data-price="{{ product.price }}">
+            В корзину
+        </button>
+    </div>
+</div>
+
+<hr class="my-5" style="border-color: #fcedf2; opacity: 1;">
+
+{# Секция с отзывами #}
+<div class="row justify-content-center mb-5">
+    <div class="col-md-10 col-lg-8">
+        <h3 class="section-title mb-4 text-center">Отзывы покупателей</h3>
+        
+        {# Вывод списка отзывов #}
+        {% for r in reviews %}
+        <div class="card mb-3 border-0 shadow-sm" style="background-color: #fafafa; border-radius: 15px;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong style="color: var(--text-pink);">Оценка: {{ r.rating }} / 5 ⭐</strong>
+                    <small class="text-muted">{{ r.review_date }}</small>
+                </div>
+                <p class="mb-0" style="font-size: 1.05rem;">{{ r.comment }}</p>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-muted p-4 bg-light rounded-4 text-center">Отзывов пока нет. Будьте первым, кто оставит своё мнение!</p>
+        {% endfor %}
+    </div>
+</div>
+
+{# Форма добавления нового отзыва #}
+<div class="row justify-content-center mb-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4" style="background-color: var(--bg-header);">
+            <div class="card-body p-4 text-center">
+                <h4 class="mb-4" style="color: var(--text-pink);">Оставить отзыв</h4>
+                
+                <div class="text-start mb-3">
+                    <label class="form-label small fw-bold">Ваша оценка (1-5)</label>
+                    <input type="number" min="1" max="5" class="form-control rounded-3" id="rating" value="5">
+                </div>
+                
+                <div class="text-start mb-3">
+                    <label class="form-label small fw-bold">Комментарий</label>
+                    <textarea class="form-control rounded-3" id="comment" rows="3" placeholder="Поделитесь впечатлениями..."></textarea>
+                </div>
+                
+                {# Передаём ID товара через data-атрибут #}
+                <button class="btn btn-pink w-100 submit-review-btn" data-product-id="{{ product.product_id }}">
+                    Отправить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="alert alert-warning rounded-4 text-center py-4 mt-5">
+    <h4>Товар не найден</h4>
+    <p class="mb-0">Возможно, он был удалён или вы перешли по неверной ссылке.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Функция добавления товара в корзину
+function addToCart(id, name, price) {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existing = cart.find(i => i.id === id);
+    if (existing) existing.quantity += 1;
+    else cart.push({ id, name, price, quantity: 1 });
+    localStorage.setItem('cart', JSON.stringify(cart));
+    alert('Добавлено в корзину');
+}
+
+// Обработчик для кнопки "В корзину" на странице товара
+document.querySelector('.add-to-cart-btn')?.addEventListener('click', function() {
+    const id = parseInt(this.dataset.id);
+    const name = this.dataset.name;
+    const price = parseFloat(this.dataset.price);
+    addToCart(id, name, price);
+});
+
+// Обработчик для кнопки "Отправить отзыв"
+document.querySelector('.submit-review-btn')?.addEventListener('click', async function() {
+    const productId = parseInt(this.dataset.productId);
+    const token = localStorage.getItem('token');
+    
+    if (!token) { 
+        alert('Войдите для отправки отзыва'); 
+        return; 
+    }
+    
+    const resp = await fetch('/api/reviews/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            rating: parseInt(document.getElementById('rating').value),
+            comment: document.getElementById('comment').value
+        })
+    });
+    
+    if (resp.ok) { 
+        alert('Спасибо за отзыв'); 
+        location.reload(); 
+    } else { 
+        alert('Не удалось отправить отзыв'); 
+    }
+});
+</script>
+{% endblock %}

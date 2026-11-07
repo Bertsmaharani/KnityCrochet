@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<div class="row mt-4 mb-5">
+    <!-- Боковое меню профиля -->
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 rounded-4" style="background-color: var(--bg-header);">
+            <div class="card-body p-4">
+                <h4 class="mb-4" style="font-family: 'Playfair Display', serif; color: var(--text-pink);">Профиль</h4>
+                <div class="d-flex flex-column gap-2" id="nav-tabs">
+                    <button class="btn btn-light text-start active" onclick="showTab('profile', this)">Личные данные</button>
+                    <button class="btn btn-light text-start d-none" id="btn-my-orders" onclick="showTab('my-orders', this)">Мои заказы</button>
+                    <button class="btn btn-light text-start d-none" id="btn-all-orders" onclick="showTab('all-orders', this)">Все заказы</button>
+                    <button class="btn btn-light text-start d-none" id="btn-suppliers" onclick="showTab('suppliers', this)">Поставщики</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контентная часть -->
+    <div class="col-md-9">
+        
+        <!-- Личные данные -->
+        <div id="tab-profile" class="tab-content">
+            <h3 class="section-title mb-4">Личные данные</h3>
+            <form id="profileForm" class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Имя</label>
+                        <input type="text" class="form-control rounded-3" id="first_name">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Фамилия</label>
+                        <input type="text" class="form-control rounded-3" id="last_name">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Отчество</label>
+                    <input type="text" class="form-control rounded-3" id="patronym">
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Email</label>
+                        <input type="email" class="form-control rounded-3" id="email">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Телефон</label>
+                        <input type="text" class="form-control rounded-3" id="phone">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-pink w-auto px-4">Сохранить изменения</button>
+            </form>
+        </div>
+
+        <!-- Мои заказы (Клиент) -->
+        <div id="tab-my-orders" class="tab-content d-none">
+            <h3 class="section-title mb-4">История заказов</h3>
+            <div id="my-orders-container"></div>
+        </div>
+
+        <!-- Все заказы (Менеджер по продажам) -->
+        <div id="tab-all-orders" class="tab-content d-none">
+            <h3 class="section-title mb-4">Управление заказами</h3>
+            <div id="all-orders-container"></div>
+        </div>
+
+        <!-- Поставщики (Менеджер по закупкам) -->
+        <div id="tab-suppliers" class="tab-content d-none">
+            <h3 class="section-title mb-4">Поставщики</h3>
+            <div class="mb-4">
+                <!-- Кнопка теперь открывает модальное окно -->
+                <button class="btn btn-pink px-4" onclick="openSupplierModal()">+ Добавить поставщика</button>
+            </div>
+            <div id="suppliers-container"></div>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Модальное окно для добавления поставщика -->
+<div class="modal fade" id="supplierModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title" style="font-family: 'Playfair Display', serif; color: var(--text-pink);">Новый поставщик</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Название</label>
+            <input type="text" class="form-control rounded-3" id="supplier_name" placeholder="ООО Пряжа">
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Контакты</label>
+            <input type="text" class="form-control rounded-3" id="supplier_contact" placeholder="Телефон или адрес">
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-pink rounded-pill px-4" onclick="submitSupplier()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    // Безопасное получение токена
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    let currentUser = null;
+
+    // 1. Загрузка данных пользователя
+    try {
+        const resp = await fetch('/api/users/me', { headers: { 'Authorization': 'Bearer ' + token }});
+        if (!resp.ok) throw new Error("Ошибка авторизации");
+        
+        currentUser = await resp.json();
+        
+        // Заполняем форму
+        if(document.getElementById('first_name')) {
+            document.getElementById('first_name').value = currentUser.first_name || '';
+            document.getElementById('last_name').value = currentUser.last_name || '';
+            document.getElementById('patronym').value = currentUser.patronym || '';
+            document.getElementById('email').value = currentUser.email || '';
+            document.getElementById('phone').value = currentUser.phone || '';
+        }
+
+        // Показываем вкладки по ролям
+        if (currentUser.role_id === 4) {
+            document.getElementById('btn-my-orders').classList.remove('d-none');
+            loadMyOrders(token);
+        } else if (currentUser.role_id === 2) {
+            document.getElementById('btn-all-orders').classList.remove('d-none');
+            loadAllOrders(token);
+        } else if (currentUser.role_id === 1) {
+            document.getElementById('btn-suppliers').classList.remove('d-none');
+            loadSuppliers(token);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Ошибка загрузки профиля. Войдите заново.");
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+    }
+
+    // 2. Обработчик формы профиля
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                first_name: document.getElementById('first_name').value,
+                last_name: document.getElementById('last_name').value,
+                patronym: document.getElementById('patronym').value || null,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value
+            };
+            const resp = await fetch('/api/users/me', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(data)
+            });
+            if (resp.ok) alert('Данные сохранены!'); else alert('Ошибка сохранения');
+        });
+    }
+
+    // 3. Функции для работы с модальным окном
+    window.openSupplierModal = () => {
+        document.getElementById('supplier_name').value = '';
+        document.getElementById('supplier_contact').value = '';
+        const modal = new bootstrap.Modal(document.getElementById('supplierModal'));
+        modal.show();
+    };
+
+    window.submitSupplier = async () => {
+        const name = document.getElementById('supplier_name').value;
+        const contact = document.getElementById('supplier_contact').value;
+        
+        if (!name || !contact) {
+            alert("Заполните все поля!");
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/products/suppliers/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ 
+                    supplier_name: name, 
+                    contact_info: contact, 
+                    manager_id: currentUser.user_id 
+                })
+            });
+
+            if (resp.ok) { 
+                alert('Поставщик успешно добавлен!'); 
+                bootstrap.Modal.getInstance(document.getElementById('supplierModal')).hide();
+                loadSuppliers(token);
+            } else {
+                const errorData = await resp.json();
+                alert('Ошибка сервера: ' + (errorData.detail || resp.status));
+            }
+        } catch (error) {
+            alert('Не удалось связаться с сервером.');
+        }
+    };
+
+    // 4. Функции загрузки данных (определены внутри, чтобы иметь доступ к token)
+    async function loadMyOrders(tk) {
+        const container = document.getElementById('my-orders-container');
+        container.innerHTML = '<p class="text-muted">Загрузка...</p>';
+        const resp = await fetch('/api/orders/my', { headers: { 'Authorization': 'Bearer ' + tk }});
+        if (!resp.ok) { container.innerHTML = `<p class="text-danger">Ошибка: ${resp.status}</p>`; return; }
+        const orders = await resp.json();
+        if (!orders.length) { container.innerHTML = '<p class="text-muted">У вас пока нет заказов.</p>'; return; }
+        
+        let html = '';
+        orders.forEach(o => {
+            const dateStr = o.order_date ? new Date(o.order_date).toLocaleDateString('ru-RU') : '—';
+            html += `<div class="card mb-3 shadow-sm border-0">
+                <div class="card-body">
+                    <h5>Заказ #${o.order_id} от ${dateStr}</h5>
+                    <p class="mb-1">Статус: <span class="badge" style="background-color: var(--text-pink);">${o.order_status}</span></p>
+                    <p class="text-muted small mb-0">Адрес: ${o.delivery_address}</p>
+                </div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    async function loadAllOrders(tk) {
+        const container = document.getElementById('all-orders-container');
+        const resp = await fetch('/api/orders/all', { headers: { 'Authorization': 'Bearer ' + tk }});
+        if (!resp.ok) { container.innerHTML = `<p class="text-danger">Ошибка: ${resp.status}</p>`; return; }
+        const orders = await resp.json();
+        
+        let html = '<div class="table-responsive"><table class="table align-middle"><thead><tr><th>ID</th><th>Клиент</th><th>Статус</th><th>Менеджер</th></tr></thead><tbody>';
+        orders.forEach(o => {
+            html += `<tr>
+                <td><b>#${o.order_id}</b></td>
+                <td>ID: ${o.customer_id}</td>
+                <td>
+                    <select class="form-select form-select-sm" onchange="updateOrderStatus(${o.order_id}, this.value)">
+                        <option value="Новый" ${o.order_status==='Новый'?'selected':''}>Новый</option>
+                        <option value="В обработке" ${o.order_status==='В обработке'?'selected':''}>В обработке</option>
+                        <option value="Отправлен" ${o.order_status==='Отправлен'?'selected':''}>Отправлен</option>
+                        <option value="Доставлен" ${o.order_status==='Доставлен'?'selected':''}>Доставлен</option>
+                    </select>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="assignToMe(${o.order_id})">
+                        ${o.manager_id === currentUser.user_id ? 'Ведете вы' : 'Взять себе'}
+                    </button>
+                </td>
+            </tr>`;
+        });
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+    }
+
+    async function loadSuppliers(tk) {
+        const container = document.getElementById('suppliers-container');
+        container.innerHTML = '<p class="text-muted">Загрузка...</p>';
+        const resp = await fetch('/api/products/suppliers/all', { headers: { 'Authorization': 'Bearer ' + tk }});
+        if (!resp.ok) { container.innerHTML = `<p class="text-danger">Ошибка: ${resp.status}</p>`; return; }
+        const suppliers = await resp.json();
+        
+        if (!suppliers.length) { container.innerHTML = '<p class="text-muted">Поставщиков пока нет.</p>'; return; }
+        
+        let html = '<ul class="list-group shadow-sm">';
+        suppliers.forEach(s => {
+            html += `<li class="list-group-item">
+                <h6 class="mb-0">${s.supplier_name}</h6>
+                <small class="text-muted">${s.contact_info}</small>
+            </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+
+    // Глобальные функции для таблицы заказов (чтобы onclick их видел)
+    window.updateOrderStatus = async (orderId, status) => {
+        await fetch(`/api/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ order_status: status })
+        });
+    };
+
+    window.assignToMe = async (orderId) => {
+        await fetch(`/api/orders/${orderId}/manager`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ manager_id: currentUser.user_id })
+        });
+        loadAllOrders(token);
+    };
+});
+
+// Глобальная функция переключения вкладок (вызывается из HTML)
+window.showTab = (tabId, btn) => {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('d-none'));
+    document.querySelectorAll('#nav-tabs .btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.remove('d-none');
+    if (btn) btn.classList.add('active');
+};
+</script>
+{% endblock %}
