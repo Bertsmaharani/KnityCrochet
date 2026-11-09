@@ -1,6 +1,5 @@
 """
 Модуль маршрутов для работы с пользователями.
-
 Реализует регистрацию, аутентификацию (вход) и управление
 профилем текущего пользователя. Пароли хранятся в зашифрованном виде.
 """
@@ -16,25 +15,20 @@ router = APIRouter(prefix="/api/users", tags=["Пользователи"])
 
 @router.post("/register", response_model=schemas.UserOut, status_code=201)
 async def register(user: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
-    """
-    Регистрация нового клиента.
-    
-    Присваивает пользователю роль «Клиент» (role_id=4).
-    Проверяет уникальность логина перед созданием записи в БД.
-    """
+    """Регистрация нового клиента."""
     # Проверка, не занят ли логин
     existing = await crud.get_user_by_login(db, user.user_login)
     if existing:
         raise HTTPException(status_code=400, detail="Логин уже занят")
     
     try:
-        # роль_id=4 — «Клиент» (см. таблицу Roles из курсовой)
+        # роль_id=4 — «Клиент»
         return await crud.create_user(db, user, role_id=4)
     except ValueError as e:
-        # Перехватываем ошибку слишком длинного пароля (лимит bcrypt)
+        # Перехватываем ошибку слишком длинного пароля
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:
-        # Общая обработка ошибок (например, неверный формат email или даты)
+        # Общая обработка ошибок 
         raise HTTPException(status_code=400, detail="Ошибка регистрации. Проверьте введенные данные.")
 
 
@@ -43,12 +37,7 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Аутентификация пользователя и выдача JWT-токена.
-    
-    Принимает логин и пароль в формате form-data (стандарт OAuth2).
-    При успехе возвращает access_token, который используется для доступа к защищённым роутам.
-    """
+    """Аутентификация пользователя и выдача JWT-токена."""
     # Ищем пользователя по логину
     user = await crud.get_user_by_login(db, form_data.username)
     
@@ -67,12 +56,7 @@ async def login(
 
 @router.get("/me", response_model=schemas.UserOut)
 async def read_me(current_user: models.User = Depends(get_current_user)):
-    """
-    Получение данных текущего авторизованного пользователя.
-    
-    Использует зависимость get_current_user, которая извлекает
-    пользователя из JWT-токена.
-    """
+    """Получение данных текущего авторизованного пользователя."""
     return current_user
 
 
@@ -82,10 +66,5 @@ async def update_profile(
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """
-    Обновление личных данных текущего пользователя.
-    
-    Позволяет изменить имя, фамилию, отчество, email и телефон.
-    Логин и роль изменить нельзя.
-    """
+    """Обновление личных данных текущего пользователя."""
     return await crud.update_user(db, current_user.user_id, user_data)

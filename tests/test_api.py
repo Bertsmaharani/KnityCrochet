@@ -1,6 +1,5 @@
 """
 Модуль модульных тестов API.
-
 Проверяет корректность работы основных эндпоинтов средствами
 библиотеки pytest и асинхронного клиента HTTPX.
 """
@@ -38,10 +37,7 @@ async def test_get_product_not_found():
 
 @pytest.mark.asyncio
 async def test_register_short_password():
-    """
-    Проверка валидации: слишком короткий пароль должен отклоняться
-    Pydantic с кодом 422 (Unprocessable Entity).
-    """
+    """Проверка валидации."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url=BASE) as ac:
         r = await ac.post("/api/users/register", json={
             "user_login": "test_user_x",

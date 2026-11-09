@@ -1,6 +1,5 @@
 """
 Главный модуль приложения.
-
 Отвечает за:
 - инициализацию FastAPI-приложения и его параметров;
 - подключение статических файлов и шаблонов;
@@ -22,7 +21,7 @@ import django
 django.setup()
 
 from django.core.wsgi import get_wsgi_application
-from a2wsgi import WSGIMiddleware  # Используем a2wsgi вместо starlette
+from a2wsgi import WSGIMiddleware
 
 django_app = get_wsgi_application()
 
@@ -140,12 +139,13 @@ async def profile_page(request: Request):
     return templates.TemplateResponse(request, "profile.html")
 
 
-# Монтируем статику Django (CSS/JS для админки)
+# Монтируем статику Django (CSS/JS для админ-панели)
 app.mount(
     "/django-static", 
     StaticFiles(directory=str(BASE_DIR / "admin_panel" / "staticfiles")), 
     name="django-static"
 )
 
-# Монтируем саму админку Django
+
+# Монтируем админ-панель Django
 app.mount("/admin", WSGIMiddleware(django_app))

@@ -1,9 +1,6 @@
 """
 Модуль зависимостей FastAPI.
-
-Содержит функции, автоматически вызываемые фреймворком перед обработкой
-запроса. Использование механизма внедрения зависимостей (Dependency Injection)
-позволяет избежать дублирования кода проверки прав доступа в каждом эндпоинте.
+Содержит функции, автоматически вызываемые фреймворком перед обработкой запроса. 
 """
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -22,13 +19,7 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
 ) -> models.User:
-    """
-    Возвращает текущего аутентифицированного пользователя.
-
-    Извлекает JWT-токен из заголовка Authorization, проверяет его подпись
-    и осуществляет поиск пользователя в базе данных по логину.
-    При невалидном токене или отсутствии пользователя возвращает 401.
-    """
+    """Возвращает текущего аутентифицированного пользователя."""
     exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Не удалось проверить учетные данные",
@@ -49,13 +40,7 @@ async def get_current_user(
 async def get_current_manager(
     current_user: models.User = Depends(get_current_user),
 ) -> models.User:
-    """
-    Проверяет наличие у пользователя прав менеджера.
-
-    Роли с идентификаторами 1 и 2 (менеджер по закупкам и менеджер по продажам)
-    обладают расширенными правами: могут создавать, изменять и удалять товары.
-    Для остальных ролей возвращается код 403 (Forbidden).
-    """
+    """Проверяет наличие у пользователя прав менеджера."""
     if current_user.role_id not in (1, 2):
         raise HTTPException(status_code=403, detail="Недостаточно прав")
     return current_user

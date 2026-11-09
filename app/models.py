@@ -1,13 +1,7 @@
 """
 Модуль ORM-моделей базы данных.
-
-Содержит описание семи таблиц в соответствии с ER-диаграммой,
-разработанной в курсовой работе: Roles, Users, Suppliers, Products,
-Orders, OrderProducts, Reviews.
-
-Каждый класс представляет отдельную таблицу, атрибуты класса — её столбцы.
-Отношения (relationship) реализуют связи между таблицами, определённые
-при проектировании базы данных.
+Содержит описание семи таблиц в соответствии с ER-диаграммой: 
+Roles, Users, Suppliers, Products, Orders, OrderProducts, Reviews.
 """
 from sqlalchemy import (
     Column, Integer, Text, Numeric, Date, ForeignKey,
@@ -17,43 +11,30 @@ from app.database import Base
 
 
 class Role(Base):
-    """
-    Таблица ролей пользователей.
-
-    Содержит четыре роли в соответствии с предметной областью:
-    менеджер по закупкам, менеджер по продажам, сотрудник склада, клиент.
-    """
+    """Таблица ролей пользователей."""
     __tablename__ = "Roles"
 
-    role_id = Column(Integer, primary_key=True, index=True)  # Первичный ключ
-    role_name = Column(Text, nullable=False)                 # Наименование роли
+    role_id = Column(Integer, primary_key=True, index=True)  
+    role_name = Column(Text, nullable=False)                 
 
-    # Связь "один ко многим": одна роль — множество пользователей
     users = relationship("User", back_populates="role")
 
 
 class User(Base):
-    """
-    Таблица пользователей системы.
-
-    Объединяет сотрудников организации и клиентов.
-    Пароли хранятся в виде хеша (алгоритм bcrypt), что исключает
-    возможность их восстановления в открытом виде.
-    """
+    """Таблица пользователей системы."""
     __tablename__ = "Users"
 
     user_id = Column(Integer, primary_key=True, index=True)
-    role_id = Column(Integer, ForeignKey("Roles.role_id"))   # Внешний ключ на таблицу Roles
-    user_login = Column(Text, unique=True, nullable=False)   # Уникальный логин
-    user_password = Column(Text, nullable=False)             # Хеш пароля
+    role_id = Column(Integer, ForeignKey("Roles.role_id"))  
+    user_login = Column(Text, unique=True, nullable=False)   
+    user_password = Column(Text, nullable=False)           
     first_name = Column(Text, nullable=False)
     last_name = Column(Text, nullable=False)
-    patronym = Column(Text, nullable=True)                   # Отчество (необязательное поле)
+    patronym = Column(Text, nullable=True)                   
     email = Column(Text, nullable=False)
     phone = Column(Text, nullable=False)
     birth_date = Column(Date, nullable=False)
 
-    # Связи с другими таблицами
     role = relationship("Role", back_populates="users")
     managed_suppliers = relationship("Supplier", back_populates="manager")
     managed_orders = relationship(
@@ -66,12 +47,7 @@ class User(Base):
 
 
 class Supplier(Base):
-    """
-    Таблица поставщиков товаров.
-
-    Содержит информацию о контрагентах, поставляющих продукцию в магазин.
-    Каждый поставщик закреплён за конкретным менеджером по закупкам.
-    """
+    """Таблица поставщиков товаров."""
     __tablename__ = "Suppliers"
 
     supplier_id = Column(Integer, primary_key=True, index=True)
@@ -84,20 +60,15 @@ class Supplier(Base):
 
 
 class Product(Base):
-    """
-    Таблица товаров.
-
-    Содержит ассортимент магазина: пряжу, инструменты, книги, фурнитуру и т. д.
-    Учитывает остатки на складе и стоимость единицы товара.
-    """
+    """Таблица товаров."""
     __tablename__ = "Products"
 
     product_id = Column(Integer, primary_key=True, index=True)
     supplier_id = Column(Integer, ForeignKey("Suppliers.supplier_id"))
     product_name = Column(Text, nullable=False)
     category_name = Column(Text, nullable=False)
-    price = Column(Numeric(10, 2), nullable=False)           # Цена с точностью до копеек
-    stock_quantity = Column(Integer, nullable=False)         # Остаток на складе
+    price = Column(Numeric(10, 2), nullable=False)          
+    stock_quantity = Column(Integer, nullable=False)        
 
     supplier = relationship("Supplier", back_populates="products")
     order_items = relationship("OrderProduct", back_populates="product")
@@ -105,12 +76,7 @@ class Product(Base):
 
 
 class Order(Base):
-    """
-    Таблица заказов.
-
-    Фиксирует факт оформления заказа клиентом и содержит сведения
-    о доставке, способе оплаты и текущем статусе обработки.
-    """
+    """Таблица заказов."""
     __tablename__ = "Orders"
 
     order_id = Column(Integer, primary_key=True, index=True)
@@ -127,19 +93,13 @@ class Order(Base):
     customer = relationship(
         "User", foreign_keys=[customer_id], back_populates="customer_orders"
     )
-    # Каскадное удаление позиций при удалении заказа
     items = relationship(
         "OrderProduct", back_populates="order", cascade="all, delete-orphan"
     )
 
 
 class OrderProduct(Base):
-    """
-    Таблица состава заказа.
-
-    Реализует связь "многие ко многим" между заказами и товарами
-    с дополнительными атрибутами: количеством и величиной скидки.
-    """
+    """Таблица состава заказа."""
     __tablename__ = "OrderProducts"
 
     order_product_id = Column(Integer, primary_key=True, index=True)
@@ -153,12 +113,7 @@ class OrderProduct(Base):
 
 
 class Review(Base):
-    """
-    Таблица отзывов клиентов.
-
-    Обеспечивает обратную связь: клиент может оставить оценку
-    и текстовый комментарий к приобретённому товару.
-    """
+    """Таблица отзывов клиентов."""
     __tablename__ = "Reviews"
 
     review_id = Column(Integer, primary_key=True, index=True)

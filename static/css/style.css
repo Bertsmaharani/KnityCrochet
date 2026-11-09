@@ -3,10 +3,10 @@
 
 :root {
     --bg-main: #ffffff;
-    --bg-header: #fcedf2; /* Светло-розовый фон шапки */
-    --bg-banner: #f8b7ca; /* Розовый фон баннера */
+    --bg-header: #fcedf2; 
+    --bg-banner: #f8b7ca; 
     --text-main: #333333;
-    --text-pink: #d81b60; /* Ярко-розовый для логотипа и ссылок */
+    --text-pink: #d81b60; 
     --btn-pink: #d81b60;
     --btn-hover: #ad144d;
 }

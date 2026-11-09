@@ -1,12 +1,7 @@
 """
 Модуль Pydantic-схем для валидации данных.
-
 Схемы описывают структуру данных, принимаемых от клиента и возвращаемых
-в ответе. Валидация выполняется автоматически: при нарушении ограничений FastAPI
-возвращает код 422 и описание ошибки.
-
-Разделение схем на Input (Create) и Output (Out) обусловлено требованием
-не передавать клиенту конфиденциальные данные (например, хеш пароля).
+в ответе.
 """
 from pydantic import BaseModel, EmailStr, Field
 from datetime import date
@@ -25,11 +20,7 @@ class RoleOut(BaseModel):
 
 
 class UserCreate(BaseModel):
-    """
-    Схема регистрации нового пользователя.
-    Содержит ограничения на минимальную длину логина и пароля,
-    а также проверку корректности адреса электронной почты.
-    """
+    """Схема регистрации нового пользователя."""
     user_login: str = Field(..., min_length=3, max_length=50)
     # Запрещаем нулевые байты и ограничиваем длину пароля для bcrypt
     password: str = Field(..., min_length=6, max_length=72, pattern=r"^[^\x00]*$")
@@ -42,10 +33,7 @@ class UserCreate(BaseModel):
 
 
 class UserOut(BaseModel):
-    """
-    Схема вывода данных пользователя.
-    Не содержит поля пароля в целях безопасности.
-    """
+    """Схема вывода данных пользователя."""
     user_id: int
     user_login: str
     first_name: str
@@ -79,12 +67,7 @@ class SupplierOut(SupplierCreate):
 
 
 class ProductBase(BaseModel):
-    """
-    Базовая схема товара.
-
-    Ограничения: наименование не короче 2 символов, цена строго положительная,
-    остаток на складе не может быть отрицательным.
-    """
+    """Базовая схема товара."""
     product_name: str = Field(..., min_length=2, max_length=255)
     category_name: str = Field(..., min_length=1, max_length=255)
     # max_digits и decimal_places защищают от переполнения NUMERIC(10, 2) в БД
@@ -142,7 +125,7 @@ class OrderOut(BaseModel):
 
 
 class ReviewCreate(BaseModel):
-    """Схема создания отзыва: идентификатор товара, оценка 1–5, комментарий."""
+    """Схема создания отзыва."""
     product_id: int = Field(..., ge=1, le=MAX_ID)
     rating: int = Field(..., ge=1, le=5)
     comment: str = Field(..., min_length=3, max_length=1000, pattern=r"^[^\x00]*$")
