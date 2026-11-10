@@ -1,6 +1,5 @@
 """
 Модуль маршрутов для работы с заказами.
-
 Реализует оформление заказов и просмотр истории заказов.
 Все операции требуют аутентификации.
 """
@@ -24,13 +23,7 @@ async def create(
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """
-    Оформление нового заказа.
-
-    Клиент передаёт адрес доставки, способ оплаты и перечень товаров.
-    Остатки на складе уменьшаются автоматически. При недостатке товара
-    операция откатывается и возвращается ошибка 400.
-    """
+    """Оформление нового заказа."""
     db_order = await crud.create_order(db, order, customer_id=current_user.user_id)
     if not db_order:
         raise HTTPException(
@@ -49,7 +42,6 @@ async def my_orders(
     return await crud.get_user_orders(db, current_user.user_id)
 
 
-# ВАЖНО: /all должен быть объявлен ДО /{order_id}
 @router.get("/all", response_model=list[schemas.OrderOut])
 async def get_all_orders(
     db: AsyncSession = Depends(get_db),
@@ -67,12 +59,7 @@ async def get_one(
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """
-    Получение заказа по идентификатору.
-
-    Клиент может просматривать только собственные заказы. Менеджеры
-    (роли 1 и 2) имеют доступ ко всем заказам.
-    """
+    """Получение заказа по идентификатору."""
     order = await crud.get_order(db, order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Заказ не найден")
@@ -84,7 +71,7 @@ async def get_one(
 @router.patch("/{order_id}/manager", response_model=schemas.OrderOut)
 async def assign_manager(
     order_id: int = Path(..., ge=1, le=MAX_ID),
-    data: schemas.OrderUpdateManager = Body(...), # Теперь тело строго обязательно
+    data: schemas.OrderUpdateManager = Body(...), 
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
@@ -104,7 +91,7 @@ async def assign_manager(
 @router.patch("/{order_id}/status", response_model=schemas.OrderOut)
 async def change_status(
     order_id: int = Path(..., ge=1, le=MAX_ID),
-    data: schemas.OrderUpdateStatus = Body(...), # Тело строго обязательно
+    data: schemas.OrderUpdateStatus = Body(...),
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):

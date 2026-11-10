@@ -106,7 +106,7 @@ class OrderProduct(Base):
     order_id = Column(Integer, ForeignKey("Orders.order_id"))
     product_id = Column(Integer, ForeignKey("Products.product_id"))
     quantity = Column(Integer, nullable=False)
-    discount = Column(Numeric(5, 2), nullable=False, default=0)  # Скидка в процентах
+    discount = Column(Numeric(5, 2), nullable=False, default=0)  
 
     order = relationship("Order", back_populates="items")
     product = relationship("Product", back_populates="order_items")
@@ -119,7 +119,7 @@ class Review(Base):
     review_id = Column(Integer, primary_key=True, index=True)
     customer_id = Column(Integer, ForeignKey("Users.user_id"))
     product_id = Column(Integer, ForeignKey("Products.product_id"))
-    rating = Column(Integer, nullable=False)                 # Оценка от 1 до 5
+    rating = Column(Integer, nullable=False)                 
     comment = Column(Text, nullable=False)
     review_date = Column(Date, nullable=False)
 

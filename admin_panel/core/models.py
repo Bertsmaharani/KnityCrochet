@@ -29,7 +29,6 @@ class User(models.Model):
         db_table = 'Users'
 
     def save(self, *args, **kwargs):
-        # Если пароль введен в открытом виде (не зашифрован), шифруем его
         if self.user_password and not self.user_password.startswith('pbkdf2_sha256$'):
             self.user_password = make_password(self.user_password)
         super().save(*args, **kwargs)

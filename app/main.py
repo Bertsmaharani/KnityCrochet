@@ -38,13 +38,7 @@ from app.routers import products, users, orders, reviews
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Обработчик событий жизненного цикла приложения.
-
-    Выполняется при запуске сервера:
-    1. Создаёт все таблицы в БД, если они ещё не существуют.
-    2. Заполняет таблицу Roles базовыми записями.
-    """
+    """Обработчик событий жизненного цикла приложения."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     from app.database import async_session_maker

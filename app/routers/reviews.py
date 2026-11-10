@@ -1,8 +1,6 @@
 """
 Модуль маршрутов для работы с отзывами.
-
-Позволяет клиентам оставлять отзывы о товарах и получать список
-существующих отзывов по конкретному товару.
+Позволяет клиентам оставлять отзывы о товарах и получать список существующих отзывов по конкретному товару.
 """
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,12 +19,7 @@ async def create(
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """
-    Создание отзыва.
-
-    Требуется аутентификация. Перед сохранением выполняется проверка
-    существования товара, к которому оставляется отзыв.
-    """
+    """Создание отзыва."""
     product = await crud.get_product(db, review.product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Товар не найден")
@@ -39,3 +32,4 @@ async def product_reviews(
     db: AsyncSession = Depends(get_db)):
     """Получение всех отзывов по указанному товару. Доступно без аутентификации."""
     return await crud.get_product_reviews(db, product_id)
+
